@@ -6,6 +6,9 @@
 #include <sys/stat.h>
 
 /**
+ * main - Entry point of the program
+ *
+ * Return: 0
  * This code works as follows:
  *
  * The program first prints a prompt, "#cisfun$ ".
@@ -17,54 +20,43 @@
  * If the user presses Ctrl+D, the program prints a message and exits.
  */
 
-int main() {
-  char input[1024];
-  char *command;
-  char *args[10];
-  int i;
-  char *path;
-  int status;
+int main(void)
+{
+char input[1024], char *command, char *args[10], int i, char *path, int status;
 
-  while (1) {
-    printf("#cisfun$ ");
-    fgets(input, 1024, stdin);
-    input[strlen(input) - 1] = '\0';
+while (1)
+{
+printf("#cisfun$ ");
+fgets(input, 1024, stdin);
+input[strlen(input) - 1] = '\0';
 
-    command = strtok(input, " ");
-    for (i = 0; command != NULL; i++) {
-      args[i] = command;
-      command = strtok(NULL, " ");
-    }
+command = strtok(input, " ");
+for (i = 0; command != NULL; i++)
+{args[i] = command;
+command = strtok(NULL, " "); }
 
-    if (strcmp(command, "exit") == 0) {
-      break;
-    } else if (feof(stdin)) {
-      printf("End of file\n");
-      break;
-    }
+if (strcmp(command, "exit") == 0)
+{break; }
 
-    path = getenv("PATH");
-    if (path == NULL) {
-      printf("Error: PATH not set\n");
-      continue;
-    }
+else if (feof(stdin))
+{printf("End of file\n");
+break; }
 
-    for (i = 0; path[i] != '\0'; i++) {
-      char *bin = strtok(&path[i], ":");
-      if (bin == NULL) {
-        continue;
-      }
+path = getenv("PATH");
+if (path == NULL)
+{printf("Error: PATH not set\n");
+continue; }
 
-      status = execve(bin, args, environ);
-      if (status == 0) {
-        break;
-      }
-    }
+for (i = 0; path[i] != '\0'; i++)
+{char *bin = strtok(&path[i], ":");
+if (bin == NULL)
+{ continue; }
 
-    if (status != 0) {
-      printf("Error: %d\n", status);
-    }
-  }
+status = execve(bin, args, environ);
+if (status == 0)
+{ break; } }
 
-  return 0;
-}
+if (status != 0)
+{ printf("Error: %d\n", status); } }
+
+return (0); }
