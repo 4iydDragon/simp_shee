@@ -15,6 +15,11 @@
 
 extern char** environ;  /* Declare the 'environ' variable*/
 
-bool commandExists(const char* command);
+void print_prompt(void);
+int read_command(char *command);
+int execute_command(char *command);
+void handle_error(void);
+
+bool commandExists(const char *command);
 
 #endif
