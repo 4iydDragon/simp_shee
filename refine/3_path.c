@@ -25,13 +25,8 @@ int main() {
         /* Remove the newline character from the command */
         command[strcspn(command, "\n")] = '\0';
 
-        /* Check if the command is an absolute path */
-        if (command[0] != '/') {
-            fprintf(stderr, "./shell: No such file or directory\n");
-            continue;
-        }
-
         /* Tokenize the command line */
+        num_arguments = 0;  /* Reset num_arguments to 0 for each new command*/
         arguments[num_arguments] = strtok(command, " ");
 
         while (arguments[num_arguments] != NULL && num_arguments < MAX_ARGUMENTS - 1) {
