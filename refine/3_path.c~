@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+#define MAX_COMMAND_LENGTH 100
+#define MAX_ARGUMENTS 10
+
+int main() {
+    char command[MAX_COMMAND_LENGTH];
+    char* arguments[MAX_ARGUMENTS];
+    pid_t pid;
+    int num_arguments = 0;
+
+    while (1) {
+        printf("#cisfun$ ");
+
+        if (fgets(command, sizeof(command), stdin) == NULL) {
+            printf("\n");
+            break;  /* End of file (Ctrl+D) detected */
+        }
+
+        /* Remove the newline character from the command */
+        command[strcspn(command, "\n")] = '\0';
+
+        /* Tokenize the command line */
+        arguments[num_arguments] = strtok(command, " ");
+
+        while (arguments[num_arguments] != NULL && num_arguments < MAX_ARGUMENTS - 1) {
+            num_arguments++;
+            arguments[num_arguments] = strtok(NULL, " ");
+        }
+
+        arguments[num_arguments] = NULL; /* Set the last element to NULL for exec functions*/
+
+        /* Fork a child process */
+        pid = fork();
+
+        if (pid < 0) {
+            /* Forking failed */
+            fprintf(stderr, "Failed to fork\n");
+            continue;
+        } else if (pid == 0) {
+            /* Child process */
+            char* path = getenv("PATH");
+            char* token;  // Separate declaration and assignment
+
+            execvp(arguments[0], arguments);
+
+            /* If execvp fails, check if the command exists in the PATH */
+            token = strtok(path, ":");
+
+            while (token != NULL) {
+                char command_path[MAX_COMMAND_LENGTH];
+                strcpy(command_path, token);
+                strcat(command_path, "/");
+                strcat(command_path, arguments[0]);
+
+                if (access(command_path, X_OK) == 0) {
+                    /* Command exists in the PATH, execute it */
+                    execv(command_path, arguments);
+                }
+
+                token = strtok(NULL, ":");
+            }
+
+            /* If the command was not found, print an error message */
+            fprintf(stderr, "./shell: No such file or directory\n");
+            exit(1);
+        } else {
+            /* Parent process */
+            int status;
+            waitpid(pid, &status, 0);
+
+            if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
+                fprintf(stderr, "./shell: Error executing command\n");
+            }
+        }
+    }
+
+    return 0;
+}
