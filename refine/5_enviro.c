@@ -1,7 +1,6 @@
 #include "shell.h"
 
-int main(void)
-{
+int main() {
     char command[MAX_COMMAND_LENGTH];
     char* arguments[MAX_ARGUMENTS];
     pid_t pid;
@@ -18,13 +17,8 @@ int main(void)
         /* Remove the newline character from the command */
         command[strcspn(command, "\n")] = '\0';
 
-        /* Check if the command is an absolute path */
-        if (command[0] != '/') {
-            fprintf(stderr, "./shell: No such file or directory\n");
-            continue;
-        }
-
         /* Tokenize the command line */
+        num_arguments = 0;  /* Reset num_arguments to 0 for each new command*/
         arguments[num_arguments] = strtok(command, " ");
 
         while (arguments[num_arguments] != NULL && num_arguments < MAX_ARGUMENTS - 1) {
@@ -33,6 +27,17 @@ int main(void)
         }
 
         arguments[num_arguments] = NULL; /* Set the last element to NULL for exec functions*/
+
+        /* Check if the command is "env" */
+        if (num_arguments > 0 && strcmp(arguments[0], "env") == 0) {
+            /* Print the current environment */
+            char** env = environ;
+            while (*env != NULL) {
+                printf("%s\n", *env);
+                env++;
+            }
+            continue;
+        }
 
         /* Fork a child process */
         pid = fork();
@@ -43,7 +48,7 @@ int main(void)
             continue;
         } else if (pid == 0) {
             /* Child process */
-            execvp(arguments[0], arguments);
+            execve(arguments[0], arguments, environ);
 
             /* If the above line is executed, it means the executable was not found */
             fprintf(stderr, "./shell: No such file or directory\n");

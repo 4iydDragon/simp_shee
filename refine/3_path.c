@@ -1,12 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "shell.h"
 
-#define MAX_COMMAND_LENGTH 100
-#define MAX_ARGUMENTS 10
+bool commandExists(const char* command) {
+    char* path = getenv("PATH");
+    char* dir = strtok(path, ":");
+
+    while (dir != NULL) {
+        char commandPath[MAX_COMMAND_LENGTH];
+        snprintf(commandPath, sizeof(commandPath), "%s/%s", dir, command);
+
+        if (access(commandPath, F_OK | X_OK) == 0) {
+            return true;
+        }
+
+        dir = strtok(NULL, ":");
+    }
+
+    return false;
+}
 
 int main() {
     char command[MAX_COMMAND_LENGTH];
@@ -36,6 +46,12 @@ int main() {
 
         arguments[num_arguments] = NULL; /* Set the last element to NULL for exec functions*/
 
+        /* Check if the command exists */
+        if (!commandExists(arguments[0])) {
+            fprintf(stderr, "./shell: Command not found: %s\n", arguments[0]);
+            continue;
+        }
+
         /* Fork a child process */
         pid = fork();
 
@@ -48,7 +64,7 @@ int main() {
             execvp(arguments[0], arguments);
 
             /* If the above line is executed, it means the executable was not found */
-            fprintf(stderr, "./shell: No such file or directory\n");
+            fprintf(stderr, "./shell: Failed to execute command: %s\n", arguments[0]);
             exit(1);
         } else {
             /* Parent process */
@@ -56,7 +72,7 @@ int main() {
             waitpid(pid, &status, 0);
 
             if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
-                fprintf(stderr, "./shell: Error executing command\n");
+                fprintf(stderr, "./shell: Error executing command: %s\n", arguments[0]);
             }
         }
     }
