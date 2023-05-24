@@ -8,20 +8,22 @@
 
 int main(void)
 {
-    char command[MAX_COMMAND_LENGTH];
+char command[MAX_COMMAND_LENGTH];
 
-    while (1)
-    {
-        print_prompt();
+while (1)
+{
+print_prompt();
 
-        if (read_command(command) == 0)
-            break;  /* End of file (Ctrl+D) detected */
+if (read_command(command) == 0)
+break;  /* End of file (Ctrl+D) detected */
 
-        if (execute_command(command) != 0)
-            handle_error();
-    }
+if (execute_command(command) != 0)
+handle_error();
 
-    return 0;
+write(STDOUT_FILENO, "\n", 1); /* Add a new line after executing the command */
+}
+
+return (0);
 }
 
 /**
@@ -30,7 +32,7 @@ int main(void)
 
 void print_prompt(void)
 {
-    write(STDOUT_FILENO, "#cisfun$ ", 10);
+write(STDOUT_FILENO, "#cisfun$ ", 10);
 }
 
 /**
@@ -41,20 +43,20 @@ void print_prompt(void)
 
 int read_command(char *command)
 {
-    if (fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL)
-    {
-        write(STDOUT_FILENO, "\n", 1);
-        return 0;
-    }
+if (fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL)
+{
+write(STDOUT_FILENO, "\n", 1);
+return (0);
+}
 
-    command[strcspn(command, "\n")] = '\0';
+command[strcspn(command, "\n")] = '\0';
 
-    if (command[0] != '/')
-    {
-        return -1;
-    }
+if (command[0] != '/')
+{
+return (-1);
+}
 
-    return 1;
+return (1);
 }
 
 /**
@@ -65,35 +67,35 @@ int read_command(char *command)
 
 int execute_command(char *command)
 {
-    pid_t pid = fork();
+pid_t pid = fork();
 
-    if (pid < 0)
-    {
-        write(STDERR_FILENO, "Failed to fork\n", 15);
-        return -1;
-    }
-    else if (pid == 0)
-    {
-        char **args = (char **)malloc(2 * sizeof(char *));
-        args[0] = strdup(command);
-        args[1] = NULL;
-        execve(command, args, environ);
+if (pid < 0)
+{
+write(STDERR_FILENO, "Failed to fork\n", 15);
+return (-1);
+}
+else if (pid == 0)
+{
+char **args = (char **)malloc(2 * sizeof(char *));
+args[0] = strdup(command);
+args[1] = NULL;
+execve(command, args, environ);
 
-        write(STDERR_FILENO, "./shell: No such file or directory\n", 34);
-        free(args[0]);
-        free(args);
-        exit(1);
-    }
-    else
-    {
-        int status;
-        waitpid(pid, &status, 0);
+write(STDERR_FILENO, "./shell: No such file or directory\n", 34);
+free(args[0]);
+free(args);
+exit(1);
+}
+else
+{
+int status;
+waitpid(pid, &status, 0);
 
-        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-            return -1;
-    }
+if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+return (-1);
+}
 
-    return (0);
+return (0);
 }
 
 /**
@@ -101,5 +103,5 @@ int execute_command(char *command)
  */
 void handle_error(void)
 {
-  /* Handle the error here */
+/* Handle the error here */
 }
