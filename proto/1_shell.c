@@ -1,14 +1,14 @@
-#include <unistd.h>
 #include "shell.h"
 
 /**
  * main - entry point
- * Return: returns o
+ * Return: returns 0
  */
 
 int main(void)
 {
 char command[MAX_COMMAND_LENGTH];
+char **env;
 
 while (1)
 {
@@ -23,6 +23,14 @@ handle_error();
 write(STDOUT_FILENO, "\n", 1); /* Add a new line after executing the command */
 }
 
+env = environ;
+while (*env != NULL) {
+size_t len = strlen(*env);
+write(STDOUT_FILENO, *env, len);
+write(STDOUT_FILENO, "\n", 1);
+env++;
+}
+
 return (0);
 }
 
@@ -32,7 +40,8 @@ return (0);
 
 void print_prompt(void)
 {
-write(STDOUT_FILENO, "#cisfun$ ", 10);
+char prompt[] = "#cisfun$ ";
+write(STDOUT_FILENO, prompt, sizeof(prompt) - 1);
 }
 
 /**
@@ -43,13 +52,18 @@ write(STDOUT_FILENO, "#cisfun$ ", 10);
 
 int read_command(char *command)
 {
-if (fgets(command, MAX_COMMAND_LENGTH, stdin) == NULL)
+size_t bufsize = MAX_COMMAND_LENGTH;
+ssize_t n;
+
+n = getline(&command, &bufsize, stdin);
+
+if (n == -1)
 {
 write(STDOUT_FILENO, "\n", 1);
 return (0);
 }
 
-command[strcspn(command, "\n")] = '\0';
+command[n - 1] = '\0';
 
 if (command[0] != '/')
 {
