@@ -15,10 +15,14 @@ int main(void)
 {
     char command[MAX_COMMAND_LENGTH];
     char **env;
+    
+    int isTerminal = isatty(STDIN_FILENO);  /* Check if input is coming from a terminal*/
 
     while (1)
     {
-        print_prompt();
+        if (isTerminal) {
+            print_prompt();
+        }
 
         if (read_command(command) == 0)
             break;
@@ -26,7 +30,9 @@ int main(void)
         if (execute_command(command) != 0)
             handle_error();
 
-        write(STDOUT_FILENO, "\n", 1);
+        if (isTerminal) {
+            write(STDOUT_FILENO, "\n", 1);
+        }
     }
 
     env = environ;
