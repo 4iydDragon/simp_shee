@@ -1,10 +1,15 @@
 #include "shell.h"
 
+/**
+ * main - entry point
+ * Return: returns 0
+ */
 int main(void)
 {
 char command[MAX_COMMAND_LENGTH];
 char **env;
 int isTerminal = isatty(STDIN_FILENO);
+/*Check if input is coming from a terminal*/
 
 while (1)
 {
@@ -37,12 +42,19 @@ env++;
 return (0);
 }
 
+/**
+ * print_prompt - prints the main shell prompt
+ */
 void print_prompt(void)
 {
 char prompt[] = "#cisfun$ ";
 write(STDOUT_FILENO, prompt, sizeof(prompt) - 1);
 }
-
+/**
+ * read_command - reads comand
+ * Return: returns 0 when succeed and -1 when fail
+ * @command: command to be executed
+ */
 int read_command(char *command)
 {
 size_t bufsize = MAX_COMMAND_LENGTH;
@@ -57,12 +69,28 @@ return (0);
 }
 
 command[n - 1] = '\0';
+
+if (command[0] != '/')
+{
+return (-1);
+}
 return (1);
 }
+
+/**
+ * execute_command - does forking for the code
+ * Return: returns 0 when succeed and -1 when fail
+ * @command: command to be executed
+ */
 
 int execute_command(char *command)
 {
 pid_t pid = fork();
+ if (strcmp(command, "exit") == 0)
+{
+exit_shell();
+return (0);/* Return 0 to indicate successful execution*/
+}
 
 if (pid < 0)
 {
@@ -100,7 +128,9 @@ return (-1);
 
 return (0);
 }
-
+/**
+ * handle_error- handles error
+ */
 void handle_error(void)
 {
 }
