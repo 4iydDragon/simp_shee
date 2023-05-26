@@ -20,6 +20,7 @@ int read_command(char *command);
 int execute_command(char *command);
 void handle_error(void);
 void exit_shell(void);
+void print_environment(void);
 
 bool commandExists(const char *command);
 
